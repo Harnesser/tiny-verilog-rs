@@ -1,12 +1,15 @@
 /// Verilog Expression
 
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
+#[allow(dead_code)]
 pub enum Operand {
     Literal(i32),
     Identifier(String),
 }
 
+#[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum Expression {
     Const(Operand),
     And(Operand, Operand),
@@ -14,6 +17,8 @@ pub enum Expression {
     Not(Operand),
 }
 
+#[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum Statement {
     Delay             {dly: u32},
     BlockingAssign    {id: Operand, expr: Expression},
@@ -22,6 +27,7 @@ pub enum Statement {
 
 
 // Procedure
+#[allow(dead_code)]
 pub enum ProcedureType {
     Initial,
     Always,
@@ -29,10 +35,32 @@ pub enum ProcedureType {
 
 pub struct Procedure {
     pub kind    : ProcedureType,
-    pub counter : u32,
+    pub counter : usize,
     pub stmts   : Vec<Statement>,
 }
 
+impl Procedure {
+
+    pub fn next(&mut self) -> Option<Statement> {
+        let mut stmt : Option<Statement> = None;
+        if self.counter < self.stmts.len() {
+            stmt = Some(self.stmts[self.counter].clone());
+            self.counter += 1;
+        }
+        stmt
+    }
+
+    pub fn push(&mut self, stmt: Statement ) {
+        self.stmts.push(stmt);
+    }
+
+    pub fn show(&self) {
+        println!("Procedure");
+        for i in 0..self.stmts.len() {
+            println!(" {:?}", self.stmts[i]);
+        }
+    }
+}
 
 
 
