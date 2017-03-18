@@ -2,8 +2,8 @@
 mod procedure;
 mod engine;
 mod test_procs;
+mod timeheap;
 
-use procedure::*;
 use test_procs::*;
 use engine::Engine;
 
@@ -26,6 +26,7 @@ fn main() {
     eng.add_proc( build_proc5() );
 
     eng.show_proc();
+    eng.init();
 
     eng.run();
 }

@@ -3,6 +3,7 @@
 use std::fmt;
 
 pub type Value = usize;
+pub type Time = usize;
 
 #[derive(PartialEq, Debug, Clone)]
 #[allow(dead_code)]
@@ -56,7 +57,7 @@ impl fmt::Display for Expression {
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
 pub enum Statement {
-    Delay             {dly: u32},
+    Delay             {dly: Time},
     BlockingAssign    {id: Operand, expr: Expression},
     NonBlockingAssign {id: Operand, expr: Expression},
 }

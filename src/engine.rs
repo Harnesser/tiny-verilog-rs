@@ -1,5 +1,6 @@
 
 use procedure::*;
+use timeheap::*;
 
 use std::collections::VecDeque;
 use std::collections::HashMap;
@@ -7,10 +8,12 @@ use std::collections::HashMap;
 //use procedure::Value;
 
 pub struct Engine {
-    procedures : Vec<Procedure>,
-    q_active : VecDeque<Statement>,
-    q_nba    : VecDeque<Statement>, // nonblocking assignments
-    symtable : HashMap<String, Value>,
+    procedures: Vec<Procedure>,
+    q_active: VecDeque<Statement>,
+    q_nba: VecDeque<Statement>, // nonblocking assignments
+    symtable: HashMap<String, Value>,
+    timeheap: TimeHeap,
+    time: Time, 
 }
 
 
@@ -22,6 +25,20 @@ impl Engine {
             procedures: vec![],
             q_active: VecDeque::new(),
             q_nba: VecDeque::new(),
+            timeheap: TimeHeap::new(),
+            time: 0,
+        }
+    }
+
+    pub fn init(&mut self) {
+        println!("*INFO* Initialising timeheap");
+        // fill the timeheap, set all trigger times to 0
+        if self.procedures.len() == 0 {
+            panic!("*ERROR* no procedures to simulate");
+        }
+
+        for i in 0..self.procedures.len() {
+            self.timeheap.push(i, 0);
         }
     }
 
@@ -92,8 +109,8 @@ impl Engine {
                 }
             },
 
-            Statement::Delay{dly} => {
-                println!("*WARNING* \"Delay\" not implemented");
+            _ => {
+                println!("*WARNING* Statement not implemented: {}", stmt);
             },
 
         }
@@ -140,15 +157,36 @@ impl Engine {
         self.q_nba.push_front(stmt);
     }
 
+    fn update_time(&mut self, time: Time) {
+        self.time = time;
+        println!("Time is now {}", self.time);
+    }
 
     // pump each procedure until we hit a delay statement or the end
     fn get_events(&mut self) -> usize {
         let mut c_stmt:usize = 0;
-        for p in &mut self.procedures {
+
+        // get a list of the procedures activating in the next time step
+        let (nexttime, proc_ids) = self.timeheap.activate();
+        if let Some(time) = nexttime {
+            self.update_time(time);
+            println!("*INFO* Activating: {:?}", proc_ids);
+        } else {
+            println!("*INFO* Time starved");
+            return 0;
+        }
+
+        // grab events from the active procedures and queue them up
+        for pid in proc_ids {
+            let p = &mut self.procedures[pid];
             while let Some(stmt) = p.next() {
                 match stmt {
                     Statement::Delay{dly} => {
-                        println!("*INFO* Blocked on delay: {}", stmt)
+                        let trig_time = self.time + dly;
+                        self.timeheap.push(pid, trig_time);
+                        println!("*INFO* Procedure {} blocked on delay til: {}", 
+                                pid, trig_time);
+                        break;
                     },
                     _ => {
                         println!("*INFO* Loading: {}", stmt);
