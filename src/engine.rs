@@ -48,8 +48,8 @@ impl Engine {
         let mut c_loop = 0;
         loop {
             println!("\n*INFO* Loop {}", c_loop);
-            self.show_symtable();
-            self.show_queues();
+            //self.show_symtable();
+            //self.show_queues();
 
             if !self.q_active.is_empty() {
                 println!("*INFO* Emptying active queue");
@@ -159,7 +159,7 @@ impl Engine {
 
     fn update_time(&mut self, time: Time) {
         self.time = time;
-        println!("Time is now {}", self.time);
+        println!("*INFO* Time is now {}", self.time);
     }
 
     // pump each procedure until we hit a delay statement or the end
@@ -202,6 +202,7 @@ impl Engine {
     //
     // Display stuff
     //
+    #[allow(dead_code)]
     pub fn show_proc(&self) {
         for i in 0..self.procedures.len() {
             println!("\nProcedure {}", i);
@@ -209,6 +210,7 @@ impl Engine {
         }
     }
 
+    #[allow(dead_code)]
     pub fn show_symtable(&self) {
         println!("\nSymbol Table");
         println!("--------------------------------------");
@@ -218,6 +220,7 @@ impl Engine {
         println!("--------------------------------------\n");
     }
 
+    #[allow(dead_code)]
     pub fn show_queues(&self) {
         println!("\nActive Queue");
         println!("--------------------------------------");

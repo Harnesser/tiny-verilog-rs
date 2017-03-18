@@ -19,9 +19,9 @@ fn main() {
 
     // build something to simulate
     println!("*INFO* Building design");
-    //eng.add_proc( build_proc1() );
-    //eng.add_proc( build_proc2() );
-    //eng.add_proc( build_proc3() );
+    eng.add_proc( build_proc1() );
+    eng.add_proc( build_proc2() );
+    eng.add_proc( build_proc3() );
     eng.add_proc( build_proc4() );
     eng.add_proc( build_proc5() );
 
