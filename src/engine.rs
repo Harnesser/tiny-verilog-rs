@@ -9,6 +9,7 @@ use std::collections::HashMap;
 pub struct Engine {
     procedures : Vec<Procedure>,
     q_active : VecDeque<Statement>,
+    q_nba    : VecDeque<Statement>, // nonblocking assignments
     symtable : HashMap<String, Value>,
 }
 
@@ -20,6 +21,7 @@ impl Engine {
             symtable: HashMap::new(),
             procedures: vec![],
             q_active: VecDeque::new(),
+            q_nba: VecDeque::new(),
         }
     }
 
@@ -37,19 +39,17 @@ impl Engine {
                 while let Some(stmt) = self.q_active.pop_back() {
                     self.execute(stmt);
                 }
+
+            } else if self.q_nba.len() > 0 {
+                println!("*INFO* Moving nonblocking assignments to active");
+                while let Some(stmt) = self.q_nba.pop_back() {
+                    self.q_active.push_front(stmt);
+                }
+
             } else {
                 println!("*INFO* Get events from procedures");
-                let mut c_stmt = 0;
-                for p in &mut self.procedures {
-                    match p.next() {
-                        Some(stmt) => {
-                            println!("*INFO* Loading: {}", stmt);
-                            self.q_active.push_front(stmt);
-                            c_stmt += 1;
-                        }
-                        _ => {}
-                    }
-                }
+                let c_stmt = self.get_events();
+
                 if c_stmt == 0 {
                     println!("*INFO* Event starved!");
                     break;
@@ -67,19 +67,29 @@ impl Engine {
         match stmt {
 
             Statement::BlockingAssign{id, expr} => {
-                println!("=");
                 match id {
                     Operand::Identifier(i) => {
                         let val = self.evaluate(expr);
                         self.symtable.insert(i, val);
                     },
-                    Operand::Literal(i) => {
+                    Operand::Literal(_) => {
                     },
                 }
             },
 
             Statement::NonBlockingAssign{id, expr} => {
-                println!("*WARNING* \"<=\" not implemented");
+                match id {
+                    Operand::Identifier(i) => {
+                        let val = self.evaluate(expr);
+                        let stmt = Statement::BlockingAssign{
+                            id: Operand::Identifier(i),
+                            expr: Expression::Const( Operand::Literal(val) ),
+                        };
+                        self.schedule_nba(stmt);
+                    },
+                    Operand::Literal(_) => {
+                    },
+                }
             },
 
             Statement::Delay{dly} => {
@@ -125,6 +135,35 @@ impl Engine {
         self.procedures.push(p);
     }
 
+
+    fn schedule_nba(&mut self, stmt: Statement) {
+        self.q_nba.push_front(stmt);
+    }
+
+
+    // pump each procedure until we hit a delay statement or the end
+    fn get_events(&mut self) -> usize {
+        let mut c_stmt:usize = 0;
+        for p in &mut self.procedures {
+            while let Some(stmt) = p.next() {
+                match stmt {
+                    Statement::Delay{dly} => {
+                        println!("*INFO* Blocked on delay: {}", stmt)
+                    },
+                    _ => {
+                        println!("*INFO* Loading: {}", stmt);
+                        self.q_active.push_front(stmt);
+                        c_stmt += 1;
+                    }
+                }
+            }
+        }
+        c_stmt
+    }
+
+    //
+    // Display stuff
+    //
     pub fn show_proc(&self) {
         for i in 0..self.procedures.len() {
             println!("\nProcedure {}", i);
@@ -145,6 +184,13 @@ impl Engine {
         println!("\nActive Queue");
         println!("--------------------------------------");
         for stmt in self.q_active.iter() {
+            println!(" {}", stmt);
+        }
+        println!("--------------------------------------\n");
+
+        println!("\nNonblocking Assignment Queue");
+        println!("--------------------------------------");
+        for stmt in self.q_nba.iter() {
             println!(" {}", stmt);
         }
         println!("--------------------------------------\n");
