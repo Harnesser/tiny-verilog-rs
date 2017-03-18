@@ -54,6 +54,7 @@ impl Procedure {
         self.stmts.push(stmt);
     }
 
+    #[allow(dead_code)]
     pub fn show(&self) {
         println!("Procedure");
         for i in 0..self.stmts.len() {
