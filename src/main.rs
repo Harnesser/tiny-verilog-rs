@@ -49,11 +49,10 @@ fn main() {
 
     println!("*INFO* Initialising");
 
-
     // queues
     let mut q_active: VecDeque<Statement> = VecDeque::new();
-    let mut q_inactive: VecDeque<Statement> = VecDeque::new();
 
+    // data
     let mut procedures: Vec<Procedure> = vec![];
 
     // build something to simulate
@@ -66,24 +65,17 @@ fn main() {
 
 
     // simulation loop
-    println!("*INFO* Starting simulation");
+    println!("\n*INFO* Starting simulation");
     let mut c_loop = 0;
     loop {
-        println!("\nLoop {}", c_loop);
+        println!("\n*INFO* Loop {}", c_loop);
 
         if q_active.len() > 0 {
             println!("*INFO* Emptying active queue");
             while q_active.len() > 0 {
                 let stmt = q_active.pop_back();
-                println!("*INFO* Executing: {:?}", stmt);
+                println!("*INFO* Executing: {}", stmt.unwrap() );
                 // do stuff
-            }
-        } else if q_inactive.len() > 0 {
-            println!("*INFO* Activiating inactive queue");
-            while q_inactive.len() > 0 {
-                let stmt =  q_inactive.pop_back().unwrap();
-                println!("*INFO* Activating: {:?}", stmt);
-                q_active.push_front(stmt);
             }
         } else {
             println!("*INFO* Get events from procedures");
@@ -91,8 +83,8 @@ fn main() {
             for p in &mut procedures {
                 match p.next() {
                     Some(stmt) => {
-                        println!("*INFO* Loading: {:?}", stmt);
-                        q_inactive.push_front(stmt);
+                        println!("*INFO* Loading: {}", stmt);
+                        q_active.push_front(stmt);
                         c_stmt += 1;
                     }
                     _ => {}
@@ -106,5 +98,5 @@ fn main() {
     c_loop += 1;
     }
 
-    println!("*INFO* Done");
+    println!("\n*INFO* Done");
 }

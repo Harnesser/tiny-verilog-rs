@@ -1,5 +1,6 @@
 /// Verilog Expression
 
+use std::fmt;
 
 #[derive(PartialEq, Debug, Clone)]
 #[allow(dead_code)]
@@ -7,6 +8,20 @@ pub enum Operand {
     Literal(i32),
     Identifier(String),
 }
+
+impl fmt::Display for Operand {
+    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
+        match self {
+            &Operand::Literal(ref num) => {
+                write!(f, "{}", num)
+            },
+            &Operand::Identifier(ref var) => {
+                write!(f, "{}", var)
+            }
+        }
+    }
+}
+
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -17,6 +32,25 @@ pub enum Expression {
     Not(Operand),
 }
 
+impl fmt::Display for Expression {
+    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
+        match self {
+            &Expression::Const(ref num) => {
+                write!(f, "{}", num)
+            },
+            &Expression::And(ref a, ref b) => {
+                write!(f, "{} & {}", a, b)
+            },
+            &Expression::Or(ref a, ref b) => {
+                write!(f, "{} | {}", a, b)
+            },
+            &Expression::Not(ref a) => {
+                write!(f, "~{}", a)
+            },
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
 pub enum Statement {
@@ -25,6 +59,21 @@ pub enum Statement {
     NonBlockingAssign {id: Operand, expr: Expression},
 }
 
+impl fmt::Display for Statement {
+    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
+        match self {
+            &Statement::Delay{ref dly} => {
+                write!(f, "#{}", dly)
+            },
+            &Statement::BlockingAssign{ref id, ref expr} => {
+                write!(f, "{} = {}", id, expr)
+            },
+            &Statement::NonBlockingAssign{ref id, ref expr} => {
+                write!(f, "{} <= {}", id, expr)
+            },
+        }
+    }
+}
 
 // Procedure
 #[allow(dead_code)]
@@ -56,9 +105,9 @@ impl Procedure {
 
     #[allow(dead_code)]
     pub fn show(&self) {
-        println!("Procedure");
+        println!("\nProcedure");
         for i in 0..self.stmts.len() {
-            println!(" {:?}", self.stmts[i]);
+            println!(" {}", self.stmts[i]);
         }
     }
 }
