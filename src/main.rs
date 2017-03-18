@@ -5,6 +5,27 @@ mod engine;
 use procedure::*;
 use engine::Engine;
 
+fn main() {
+    println!("********************************************");
+    println!("***     Tiny-Verilog-Simulator           ***");
+    println!("***        (c) CrapCorp 2017             ***");
+    println!("*** Patent Pending, All rights reserved  ***");
+    println!("********************************************");
+
+    println!("*INFO* Initialising");
+    let mut eng = Engine::new();
+
+    // build something to simulate
+    println!("*INFO* Building design");
+    eng.procedures.push( build_proc1() );
+    eng.procedures.push( build_proc2() );
+    for i in 0..eng.procedures.len() {
+        eng.procedures[i].show();
+    }
+
+    eng.run();
+}
+
 
 fn build_proc1() -> procedure::Procedure {
     let mut p = Procedure {
@@ -44,21 +65,3 @@ fn build_proc2() -> procedure::Procedure {
     p
 }
 
-fn main() {
-    println!("Tiny-Verilog-Simulator");
-    println!("(c) CrapCorp 2017");
-    println!("Patent Pending, All rights reserved");
-
-    println!("*INFO* Initialising");
-    let mut eng = Engine::new();
-
-    // build something to simulate
-    println!("*INFO* Building design");
-    eng.procedures.push( build_proc1() );
-    eng.procedures.push( build_proc2() );
-    for i in 0..eng.procedures.len() {
-        eng.procedures[i].show();
-    }
-
-    eng.run();
-}
