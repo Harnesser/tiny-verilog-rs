@@ -33,7 +33,7 @@ impl Engine {
     pub fn init(&mut self) {
         println!("*INFO* Initialising timeheap");
         // fill the timeheap, set all trigger times to 0
-        if self.procedures.len() == 0 {
+        if self.procedures.is_empty() {
             panic!("*ERROR* no procedures to simulate");
         }
 
@@ -51,13 +51,13 @@ impl Engine {
             self.show_symtable();
             self.show_queues();
 
-            if self.q_active.len() > 0 {
+            if !self.q_active.is_empty() {
                 println!("*INFO* Emptying active queue");
                 while let Some(stmt) = self.q_active.pop_back() {
                     self.execute(stmt);
                 }
 
-            } else if self.q_nba.len() > 0 {
+            } else if !self.q_nba.is_empty() {
                 println!("*INFO* Moving nonblocking assignments to active");
                 while let Some(stmt) = self.q_nba.pop_back() {
                     self.q_active.push_front(stmt);
@@ -179,7 +179,7 @@ impl Engine {
         // grab events from the active procedures and queue them up
         for pid in proc_ids {
             let p = &mut self.procedures[pid];
-            while let Some(stmt) = p.next() {
+            while let Some(stmt) = p.next_stmt() {
                 match stmt {
                     Statement::Delay{dly} => {
                         let trig_time = self.time + dly;
@@ -212,7 +212,7 @@ impl Engine {
     pub fn show_symtable(&self) {
         println!("\nSymbol Table");
         println!("--------------------------------------");
-        for (var, value) in self.symtable.iter() {
+        for (var, value) in &self.symtable {
             println!(" {} = {}", var, value);
         }
         println!("--------------------------------------\n");
@@ -221,14 +221,14 @@ impl Engine {
     pub fn show_queues(&self) {
         println!("\nActive Queue");
         println!("--------------------------------------");
-        for stmt in self.q_active.iter() {
+        for stmt in &self.q_active {
             println!(" {}", stmt);
         }
         println!("--------------------------------------\n");
 
         println!("\nNonblocking Assignment Queue");
         println!("--------------------------------------");
-        for stmt in self.q_nba.iter() {
+        for stmt in &self.q_nba {
             println!(" {}", stmt);
         }
         println!("--------------------------------------\n");

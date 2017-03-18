@@ -14,11 +14,11 @@ pub enum Operand {
 
 impl fmt::Display for Operand {
     fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
-        match self {
-            &Operand::Literal(ref num) => {
+        match *self {
+            Operand::Literal(ref num) => {
                 write!(f, "{}", num)
             },
-            &Operand::Identifier(ref var) => {
+            Operand::Identifier(ref var) => {
                 write!(f, "{}", var)
             }
         }
@@ -37,17 +37,17 @@ pub enum Expression {
 
 impl fmt::Display for Expression {
     fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
-        match self {
-            &Expression::Const(ref num) => {
+        match *self {
+            Expression::Const(ref num) => {
                 write!(f, "{}", num)
             },
-            &Expression::And(ref a, ref b) => {
+            Expression::And(ref a, ref b) => {
                 write!(f, "{} & {}", a, b)
             },
-            &Expression::Or(ref a, ref b) => {
+            Expression::Or(ref a, ref b) => {
                 write!(f, "{} | {}", a, b)
             },
-            &Expression::Not(ref a) => {
+            Expression::Not(ref a) => {
                 write!(f, "~{}", a)
             },
         }
@@ -64,14 +64,14 @@ pub enum Statement {
 
 impl fmt::Display for Statement {
     fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
-        match self {
-            &Statement::Delay{ref dly} => {
+        match *self {
+            Statement::Delay{ref dly} => {
                 write!(f, "#{}", dly)
             },
-            &Statement::BlockingAssign{ref id, ref expr} => {
+            Statement::BlockingAssign{ref id, ref expr} => {
                 write!(f, "{} = {}", id, expr)
             },
-            &Statement::NonBlockingAssign{ref id, ref expr} => {
+            Statement::NonBlockingAssign{ref id, ref expr} => {
                 write!(f, "{} <= {}", id, expr)
             },
         }
@@ -93,7 +93,7 @@ pub struct Procedure {
 
 impl Procedure {
 
-    pub fn next(&mut self) -> Option<Statement> {
+    pub fn next_stmt(&mut self) -> Option<Statement> {
         let mut stmt : Option<Statement> = None;
         if self.counter < self.stmts.len() {
             stmt = Some(self.stmts[self.counter].clone());
