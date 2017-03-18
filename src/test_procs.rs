@@ -180,3 +180,35 @@ pub fn build_proc5() -> Procedure {
 
     p
 }
+
+
+// always procedure on b3 and c3
+#[allow(dead_code)]
+pub fn build_proc6() -> Procedure {
+    let mut p = Procedure {
+            kind: ProcedureType::Always,
+            counter: 0,
+            stmts: vec![],
+    };
+
+
+    p.push( Statement::AtChange{
+        ids: vec![
+            Operand::Identifier("b3".to_string()),
+            Operand::Identifier("c3".to_string()),
+        ],  
+        });
+
+
+    p.push( Statement::NonBlockingAssign{
+        id: Operand::Identifier("at_b3_c3".to_string()),
+        expr: Expression::Or(
+            Operand::Identifier("b3".to_string()),
+            Operand::Identifier("c3".to_string()),
+            )
+        });
+
+    p
+
+}
+

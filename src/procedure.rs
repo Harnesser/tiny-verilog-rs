@@ -20,7 +20,7 @@ impl fmt::Display for Operand {
             },
             Operand::Identifier(ref var) => {
                 write!(f, "{}", var)
-            }
+            },
         }
     }
 }
@@ -60,6 +60,7 @@ pub enum Statement {
     Delay             {dly: Time},
     BlockingAssign    {id: Operand, expr: Expression},
     NonBlockingAssign {id: Operand, expr: Expression},
+    AtChange          {ids: Vec<Operand>},
 }
 
 impl fmt::Display for Statement {
@@ -74,6 +75,20 @@ impl fmt::Display for Statement {
             Statement::NonBlockingAssign{ref id, ref expr} => {
                 write!(f, "{} <= {}", id, expr)
             },
+            Statement::AtChange{ref ids} => {
+                let mut ids_str: Vec<String> = vec![];
+
+                for id in 0..ids.len() {
+                    match &ids[id] {
+                        &Operand::Identifier(ref id) => {
+                            ids_str.push(id.clone());
+                        },
+                        _ => {}
+                    }
+                }
+                let sensitivity_list = ids_str.join(" or ");
+                write!(f, "@({})", sensitivity_list)
+            },
         }
     }
 }
@@ -84,6 +99,16 @@ pub enum ProcedureType {
     Initial,
     Always,
 }
+
+impl fmt::Display for ProcedureType {
+    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            ProcedureType::Initial => write!(f, "INITIAL"),
+            ProcedureType::Always => write!(f, "ALWAYS"),
+        }
+    }
+}
+
 
 pub struct Procedure {
     pub kind    : ProcedureType,
@@ -108,13 +133,10 @@ impl Procedure {
 
     #[allow(dead_code)]
     pub fn show(&self) {
+        println!("{}", self.kind);
         for i in 0..self.stmts.len() {
             println!(" {}", self.stmts[i]);
         }
     }
 }
-
-
-
-
 
