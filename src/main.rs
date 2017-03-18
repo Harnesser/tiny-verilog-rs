@@ -19,6 +19,7 @@ fn main() {
     println!("*INFO* Building design");
     eng.add_proc( build_proc1() );
     eng.add_proc( build_proc2() );
+    eng.add_proc( build_proc3() );
     eng.show_proc();
 
     eng.run();
@@ -63,3 +64,46 @@ fn build_proc2() -> procedure::Procedure {
     p
 }
 
+
+fn build_proc3() -> procedure::Procedure {
+    let mut p = Procedure {
+            kind: ProcedureType::Initial,
+            counter: 0,
+            stmts: vec![],
+    };
+
+    // a1 = 31
+    p.push( Statement::BlockingAssign{
+        id: Operand::Identifier("a1".to_string()),
+        expr: Expression::Const(
+            Operand::Literal(31),
+            )
+        });
+
+    // a2 = 32
+    p.push( Statement::BlockingAssign{
+        id: Operand::Identifier("a2".to_string()),
+        expr: Expression::Const(
+            Operand::Literal(32),
+            )
+        });
+
+    // a3 = a1 | a2
+    p.push( Statement::BlockingAssign{
+        id: Operand::Identifier("a3".to_string()),
+        expr: Expression::Or(
+            Operand::Identifier("a1".to_string()),
+            Operand::Identifier("a2".to_string()),
+            )
+        });
+
+    // a1 = 0
+    p.push( Statement::BlockingAssign{
+        id: Operand::Identifier("a1".to_string()),
+        expr: Expression::Const(
+            Operand::Literal(0),
+            )
+        });
+
+    p
+}

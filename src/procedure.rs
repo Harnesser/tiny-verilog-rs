@@ -2,10 +2,12 @@
 
 use std::fmt;
 
+pub type Value = usize;
+
 #[derive(PartialEq, Debug, Clone)]
 #[allow(dead_code)]
 pub enum Operand {
-    Literal(i32),
+    Literal(Value),
     Identifier(String),
 }
 
@@ -105,7 +107,6 @@ impl Procedure {
 
     #[allow(dead_code)]
     pub fn show(&self) {
-        println!("\nProcedure");
         for i in 0..self.stmts.len() {
             println!(" {}", self.stmts[i]);
         }
