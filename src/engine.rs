@@ -4,6 +4,7 @@ use timeheap::*;
 
 use std::collections::VecDeque;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 //use procedure::Value;
 
@@ -12,6 +13,7 @@ pub struct Engine {
     q_active: VecDeque<Statement>,
     q_nba: VecDeque<Statement>, // nonblocking assignments
     symtable: HashMap<String, Value>,
+    waiting: HashMap<String, HashSet<ProcId>>,
     timeheap: TimeHeap,
     time: Time, 
 }
@@ -23,6 +25,7 @@ impl Engine {
         Engine {
             symtable: HashMap::new(),
             procedures: vec![],
+            waiting: HashMap::new(),
             q_active: VecDeque::new(),
             q_nba: VecDeque::new(),
             timeheap: TimeHeap::new(),
@@ -50,6 +53,7 @@ impl Engine {
             println!("\n*INFO* Loop {}", c_loop);
             //self.show_symtable();
             //self.show_queues();
+            self.show_blocked_pids();
 
             if !self.q_active.is_empty() {
                 println!("*INFO* Emptying active queue");
@@ -75,6 +79,7 @@ impl Engine {
             c_loop += 1;
         }
         println!("\n*INFO* Done");
+        self.show_blocked_pids();
         self.show_symtable();
     }
 
@@ -87,7 +92,8 @@ impl Engine {
                 match id {
                     Operand::Identifier(i) => {
                         let val = self.evaluate(expr);
-                        self.symtable.insert(i, val);
+                        self.symtable.insert(i.clone(), val);
+                        self.register_change(&i);
                     },
                     Operand::Literal(_) => {
                     },
@@ -178,25 +184,77 @@ impl Engine {
 
         // grab events from the active procedures and queue them up
         for pid in proc_ids {
-            let p = &mut self.procedures[pid];
-            while let Some(stmt) = p.next_stmt() {
-                match stmt {
-                    Statement::Delay{dly} => {
-                        let trig_time = self.time + dly;
-                        self.timeheap.push(pid, trig_time);
-                        println!("*INFO* Procedure {} blocked on delay til: {}", 
-                                pid, trig_time);
-                        break;
-                    },
-                    _ => {
-                        println!("*INFO* Loading: {}", stmt);
-                        self.q_active.push_front(stmt);
-                        c_stmt += 1;
+            c_stmt += self.get_events_from_pid(pid);
+        }
+        c_stmt
+    }
+
+
+    fn get_events_from_pid(&mut self, pid: ProcId) -> usize {
+        let mut c_stmt:usize = 0;
+        let p = &mut self.procedures[pid];
+        while let Some(stmt) = p.next_stmt() {
+            match stmt {
+
+                Statement::Delay{dly} => {
+                    let trig_time = self.time + dly;
+                    self.timeheap.push(pid, trig_time);
+                    println!("*INFO* Procedure {} blocked on delay til: {}", 
+                            pid, trig_time);
+                    break;
+                },
+
+                Statement::AtChange{ids} => {
+                    for op in ids {
+                        match op {
+                            Operand::Identifier(id) => {
+                                println!("*INFO* Process {} waits on {}", pid, id);
+                                let e = self.waiting.entry(id).or_insert( HashSet::new() );
+                                e.insert(pid);
+                            },
+                            _ => {}
+                        }
                     }
+                    break;
+                },
+
+                _ => {
+                    println!("*INFO* Loading: {}", stmt);
+                    self.q_active.push_front(stmt);
+                    c_stmt += 1;
                 }
             }
         }
-        c_stmt
+    c_stmt
+    }
+
+
+    // a value has changed, throw anythign sensive to this on
+    // the active queue
+    fn register_change(&mut self, var: &str) {
+        println!("*INFO* Registering change of var \"{}\"", var);
+        let mut pids_removed: Vec<ProcId> = vec![];
+        match self.waiting.remove(var) {
+            Some(pid_set) => {
+                // activate the procedure that was waiting on a change
+                for pid in pid_set {
+                    println!("*INFO* pulling from {}", pid);
+                    self.get_events_from_pid(pid);
+                    pids_removed.push(pid);
+                }
+            },
+            _ => {}
+        }
+        //self.scrub_waiting_list(pids_removed);
+    }
+
+    #[allow(dead_code)]
+    fn scrub_waiting_list(&mut self, pids: Vec<ProcId>) {
+        for pid in pids {
+            for values in self.waiting.values_mut() {
+                values.remove(&pid);
+            }
+        }
     }
 
     //
@@ -233,6 +291,16 @@ impl Engine {
         println!("--------------------------------------");
         for stmt in &self.q_nba {
             println!(" {}", stmt);
+        }
+        println!("--------------------------------------\n");
+    }
+
+    #[allow(dead_code)]
+    pub fn show_blocked_pids(&self) {
+        println!("\nBlocked Procedures");
+        println!("--------------------------------------");
+        for (var, value) in &self.waiting {
+            println!(" {} -> {:?}", var, value);
         }
         println!("--------------------------------------\n");
     }

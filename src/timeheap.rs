@@ -5,12 +5,12 @@
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 
-use procedure::{Time};
+use procedure::{Time, ProcId};
 
 #[derive(Eq, PartialEq)]
 struct Entry {
     time: Time,
-    proc_id: usize,
+    proc_id: ProcId,
 }
 
 impl Ord for Entry {
@@ -39,15 +39,15 @@ impl TimeHeap {
         }
     }
 
-    pub fn push(&mut self, proc_id: usize, time: Time) {
+    pub fn push(&mut self, proc_id: ProcId, time: Time) {
         self.heap.push( Entry {time: time, proc_id: proc_id } );
     }
 
 
     // activate all procedures which share the next lowest time
-    pub fn activate(&mut self) -> (Option<Time>, Vec<usize>) {
+    pub fn activate(&mut self) -> (Option<Time>, Vec<ProcId>) {
         let mut time: Option<Time> = None;
-        let mut proc_ids: Vec<usize> = vec![];
+        let mut proc_ids: Vec<ProcId> = vec![];
 
         // pop the first entry
         if let Some(entry) = self.heap.pop() { 

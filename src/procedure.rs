@@ -4,6 +4,7 @@ use std::fmt;
 
 pub type Value = usize;
 pub type Time = usize;
+pub type ProcId = usize;
 
 #[derive(PartialEq, Debug, Clone)]
 #[allow(dead_code)]
@@ -120,6 +121,17 @@ impl Procedure {
 
     pub fn next_stmt(&mut self) -> Option<Statement> {
         let mut stmt : Option<Statement> = None;
+        
+        // always can go again...
+        match self.kind {
+            ProcedureType::Always => {
+                if self.counter == self.stmts.len() {
+                    self.counter = 0;
+                }
+            }
+            _ => {},
+        }
+
         if self.counter < self.stmts.len() {
             stmt = Some(self.stmts[self.counter].clone());
             self.counter += 1;

@@ -149,7 +149,7 @@ pub fn build_proc5() -> Procedure {
     p.push( Statement::BlockingAssign{
         id: Operand::Identifier("c1".to_string()),
         expr: Expression::Const(
-            Operand::Literal(5),
+            Operand::Literal(5*256),
             )
         });
 
@@ -157,7 +157,7 @@ pub fn build_proc5() -> Procedure {
     p.push( Statement::BlockingAssign{
         id: Operand::Identifier("c2".to_string()),
         expr: Expression::Const(
-            Operand::Literal(10),
+            Operand::Literal(10*256),
             )
         });
 
@@ -165,11 +165,11 @@ pub fn build_proc5() -> Procedure {
     p.push( Statement::NonBlockingAssign{
         id: Operand::Identifier("c1".to_string()),
         expr: Expression::Const(
-            Operand::Literal(100),
+            Operand::Literal(100*256),
             )
         });
 
-    // c3 = c1 | c2 (should get 15)
+    // c3 = c1 | c2 (should get 15*256)
     p.push( Statement::BlockingAssign{
         id: Operand::Identifier("c3".to_string()),
         expr: Expression::Or(
