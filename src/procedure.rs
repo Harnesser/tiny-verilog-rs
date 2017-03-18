@@ -79,12 +79,9 @@ impl fmt::Display for Statement {
             Statement::AtChange{ref ids} => {
                 let mut ids_str: Vec<String> = vec![];
 
-                for id in 0..ids.len() {
-                    match &ids[id] {
-                        &Operand::Identifier(ref id) => {
-                            ids_str.push(id.clone());
-                        },
-                        _ => {}
+                for ident in ids {
+                    if let Operand::Identifier(ref id) = *ident {
+                        ids_str.push(id.clone());
                     }
                 }
                 let sensitivity_list = ids_str.join(" or ");
@@ -123,13 +120,10 @@ impl Procedure {
         let mut stmt : Option<Statement> = None;
         
         // always can go again...
-        match self.kind {
-            ProcedureType::Always => {
-                if self.counter == self.stmts.len() {
-                    self.counter = 0;
-                }
+        if let ProcedureType::Always = self.kind {
+            if self.counter == self.stmts.len() {
+                self.counter = 0;
             }
-            _ => {},
         }
 
         if self.counter < self.stmts.len() {

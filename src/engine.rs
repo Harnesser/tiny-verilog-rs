@@ -206,13 +206,10 @@ impl Engine {
 
                 Statement::AtChange{ids} => {
                     for op in ids {
-                        match op {
-                            Operand::Identifier(id) => {
-                                println!("*INFO* Process {} waits on {}", pid, id);
-                                let e = self.waiting.entry(id).or_insert( HashSet::new() );
-                                e.insert(pid);
-                            },
-                            _ => {}
+                        if let Operand::Identifier(id) = op {
+                            println!("*INFO* Process {} waits on {}", pid, id);
+                            let e = self.waiting.entry(id).or_insert_with( HashSet::new );
+                            e.insert(pid);
                         }
                     }
                     break;
@@ -234,16 +231,13 @@ impl Engine {
     fn register_change(&mut self, var: &str) {
         println!("*INFO* Registering change of var \"{}\"", var);
         let mut pids_removed: Vec<ProcId> = vec![];
-        match self.waiting.remove(var) {
-            Some(pid_set) => {
-                // activate the procedure that was waiting on a change
-                for pid in pid_set {
-                    println!("*INFO* pulling from {}", pid);
-                    self.get_events_from_pid(pid);
-                    pids_removed.push(pid);
-                }
-            },
-            _ => {}
+        if let Some(pid_set) = self.waiting.remove(var) {
+            // activate the procedure that was waiting on a change
+            for pid in pid_set {
+                println!("*INFO* pulling from {}", pid);
+                self.get_events_from_pid(pid);
+                pids_removed.push(pid);
+            }
         }
         //self.scrub_waiting_list(pids_removed);
     }
