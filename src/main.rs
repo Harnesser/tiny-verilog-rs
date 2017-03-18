@@ -17,11 +17,9 @@ fn main() {
 
     // build something to simulate
     println!("*INFO* Building design");
-    eng.procedures.push( build_proc1() );
-    eng.procedures.push( build_proc2() );
-    for i in 0..eng.procedures.len() {
-        eng.procedures[i].show();
-    }
+    eng.add_proc( build_proc1() );
+    eng.add_proc( build_proc2() );
+    eng.show_proc();
 
     eng.run();
 }
