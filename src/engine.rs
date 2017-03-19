@@ -1,6 +1,7 @@
 
 use procedure::*;
 use timeheap::*;
+use vcd::*;
 
 use std::collections::VecDeque;
 use std::collections::HashMap;
@@ -15,7 +16,9 @@ pub struct Engine {
     symtable: HashMap<String, Value>,
     waiting: HashMap<String, HashSet<ProcId>>,
     timeheap: TimeHeap,
-    time: Time, 
+    time: Time,
+    vars: Vec<String>, // list of vars in the design
+    dumper: Option<VcdWriter>, // created later
 }
 
 
@@ -30,6 +33,8 @@ impl Engine {
             q_nba: VecDeque::new(),
             timeheap: TimeHeap::new(),
             time: 0,
+            vars: vec![],
+            dumper: None,
         }
     }
 
@@ -42,6 +47,31 @@ impl Engine {
 
         for i in 0..self.procedures.len() {
             self.timeheap.push(i, 0);
+        }
+
+        println!("*INFO* Gathering variables used in the design");
+        self.get_identifier_list();
+        self.show_identifiers();
+
+        println!("*INFO* Opening VCD file");
+        self.dumper = VcdWriter::new("waves.vcd");
+        if let Some(ref mut vcd) = self.dumper {
+            vcd.write_header();
+            vcd.declare_vars(&self.vars);
+        }
+
+    }
+
+
+    fn get_identifier_list(&mut self) {
+        self.vars.clear();
+        for pid in &self.procedures {
+            let proc_vars = pid.get_identifiers();
+            for var in proc_vars {
+                if !self.vars.contains(&var) {
+                    self.vars.push(var);
+                }
+            }
         }
     }
 
@@ -68,6 +98,11 @@ impl Engine {
                 }
 
             } else {
+                println!("*INFO* Update VCD");
+                if let Some(ref mut vcd) = self.dumper {
+                    vcd.dump(self.time, &self.vars, &self.symtable);
+                }
+
                 println!("*INFO* Get events from procedures");
                 let c_stmt = self.get_events();
 
@@ -78,7 +113,10 @@ impl Engine {
             }
             c_loop += 1;
         }
-        println!("\n*INFO* Done");
+        println!("\n*INFO* Finished at time {}", self.time);
+        if let Some(ref mut vcd) = self.dumper {
+            vcd.dump(self.time, &self.vars, &self.symtable);
+        }
         self.show_blocked_pids();
         self.show_symtable();
     }
@@ -295,6 +333,17 @@ impl Engine {
         println!("--------------------------------------");
         for (var, value) in &self.waiting {
             println!(" {} -> {:?}", var, value);
+        }
+        println!("--------------------------------------\n");
+    }
+
+
+    #[allow(dead_code)]
+    pub fn show_identifiers(&self) {
+        println!("\nIdentifiers");
+        println!("--------------------------------------");
+        for var in &self.vars {
+            println!(" {}", var);
         }
         println!("--------------------------------------\n");
     }

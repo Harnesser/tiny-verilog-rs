@@ -26,6 +26,16 @@ impl fmt::Display for Operand {
     }
 }
 
+impl Operand {
+    pub fn get_identifier(&self) -> Option<String> {
+        if let Operand::Identifier(ref var) = *self {
+            Some(var.clone())
+        } else {
+            None
+        }
+    }
+}
+
 
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
@@ -52,6 +62,41 @@ impl fmt::Display for Expression {
                 write!(f, "~{}", a)
             },
         }
+    }
+}
+
+impl Expression {
+    fn get_identifiers(&self) -> Vec<String> {
+        let mut vars: Vec<String> = vec![];
+        match *self {
+            Expression::Const(ref num) => {
+                if let Some(var) = num.get_identifier() {
+                    vars.push(var);
+                }
+            },
+            Expression::And(ref a, ref b) => {
+                if let Some(var) = a.get_identifier() {
+                    vars.push(var);
+                }
+                if let Some(var) = b.get_identifier() {
+                    vars.push(var);
+                }
+            },
+            Expression::Or(ref a, ref b) => {
+                if let Some(var) = a.get_identifier() {
+                    vars.push(var);
+                }
+                if let Some(var) = b.get_identifier() {
+                    vars.push(var);
+                }
+            },
+            Expression::Not(ref a) => {
+                if let Some(var) = a.get_identifier() {
+                    vars.push(var);
+                }
+            },
+        }
+        vars
     }
 }
 
@@ -88,6 +133,28 @@ impl fmt::Display for Statement {
                 write!(f, "@({})", sensitivity_list)
             },
         }
+    }
+}
+
+impl Statement {
+    pub fn get_identifiers(&self) -> Vec<String> {
+        let mut vars: Vec<String> = vec![];
+        match *self {
+            Statement::BlockingAssign{ref id, ref expr} => {
+                if let Some(var) = id.get_identifier() {
+                    vars.push(var.clone());
+                }
+                vars.append( &mut expr.get_identifiers() );
+            },
+            Statement::NonBlockingAssign{ref id, ref expr} => {
+                if let Some(var) = id.get_identifier() {
+                    vars.push(var.clone());
+                }
+                vars.append( &mut expr.get_identifiers() );
+            },
+            _ => {}, // don't care about anything in other statement types
+        }
+        vars
     }
 }
 
@@ -135,6 +202,19 @@ impl Procedure {
 
     pub fn push(&mut self, stmt: Statement ) {
         self.stmts.push(stmt);
+    }
+
+    pub fn get_identifiers(&self) -> Vec<String> {
+        let mut vars: Vec<String> = vec![];
+        for stmt in &self.stmts {
+            let mut stmt_vars = stmt.get_identifiers();
+            for var in stmt_vars {
+                if !vars.contains(&var) {
+                    vars.push(var);
+                }
+            }
+        }
+        vars
     }
 
     #[allow(dead_code)]
