@@ -78,6 +78,32 @@ pub fn build_flop(ff_in: &str, ff_out: &str) -> Procedure {
     p
 }
 
+// build up a flip-flop with a reset - need 'if' statement
+#[allow(dead_code)]
+pub fn build_flop_with_resetb(ff_in: &str, ff_out: &str) -> Procedure {
+    let mut p = Procedure {
+            kind: ProcedureType::Always,
+            counter: 0,
+            stmts: vec![],
+    };
+
+    p.push( Statement::AtChange{
+        edges: vec![
+            Edge::Rise("clk".to_string()),
+            Edge::Fall("resetb".to_string()),
+        ],
+        });
+
+    p.push( Statement::BlockingAssign{
+        id: Operand::Identifier(ff_out.to_string()),
+        expr: Expression::Const(
+            Operand::Identifier(ff_in.to_string()),
+            )
+        });
+
+    p
+}
+
 
 // build up a bitstream
 #[allow(dead_code)]
@@ -128,6 +154,34 @@ pub fn build_and(y: &str, a: &str, b: &str) -> Procedure {
         expr: Expression::And(
             Operand::Identifier(a.to_string()),
             Operand::Identifier(b.to_string()),
+            )
+        });
+
+    p
+
+}
+
+// build up a inverter
+#[allow(dead_code)]
+pub fn build_inverter(y: &str, a: &str) -> Procedure {
+
+    let mut p = Procedure {
+            kind: ProcedureType::Always,
+            counter: 0,
+            stmts: vec![],
+    };
+
+    p.push( Statement::AtChange{
+        edges: vec![
+            Edge::Any(a.to_string()),
+        ],  
+        });
+
+
+    p.push( Statement::NonBlockingAssign{
+        id: Operand::Identifier(y.to_string()),
+        expr: Expression::Not(
+            Operand::Identifier(a.to_string()),
             )
         });
 

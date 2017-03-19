@@ -25,6 +25,12 @@ fn main() {
     eng.add_proc( build_bitstream("b", 0x34AE4210, 32, 5) );
     eng.add_proc( build_and("y", "a", "b") );
     eng.add_proc( build_flop("y", "ff1_out"));
+    eng.add_proc( build_flop("ff1_out", "ff2_out"));
+    eng.add_proc( build_flop("ff2_out", "ff3_out"));
+    eng.add_proc( build_flop("ff_div_inv", "ff_div"));
+    eng.add_proc( build_inverter("ff_div_inv", "ff_div") );
+
+
 
     eng.show_proc();
     eng.init();
