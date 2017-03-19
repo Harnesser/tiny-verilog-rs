@@ -20,13 +20,14 @@ fn main() {
 
     // build something to simulate
     println!("*INFO* Building design");
-    eng.add_proc( build_clock(5, 1) );
+    eng.add_proc( build_clock(1, 10) );
     eng.add_proc( build_proc1() );
     eng.add_proc( build_proc2() );
     eng.add_proc( build_proc3() );
     eng.add_proc( build_proc4() );
     eng.add_proc( build_proc5() );
     eng.add_proc( build_proc6() );
+    eng.add_proc( build_flop("at_b3_c3", "ff1_out"));
 
     eng.show_proc();
     eng.init();

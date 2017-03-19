@@ -254,3 +254,27 @@ pub fn build_clock(half_period: usize, cycles: usize) -> Procedure {
     p
 }
 
+// build up a flip-flop
+#[allow(dead_code)]
+pub fn build_flop(ff_in: &str, ff_out: &str) -> Procedure {
+    let mut p = Procedure {
+            kind: ProcedureType::Always,
+            counter: 0,
+            stmts: vec![],
+    };
+
+    p.push( Statement::AtChange{
+        ids: vec![
+            Operand::Identifier("clk".to_string()),
+        ],  
+        });
+
+    p.push( Statement::BlockingAssign{
+        id: Operand::Identifier(ff_out.to_string()),
+        expr: Expression::Const(
+            Operand::Identifier(ff_in.to_string()),
+            )
+        });
+
+    p
+}

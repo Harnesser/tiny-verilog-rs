@@ -1,6 +1,6 @@
 
 run:
-	cargo run
+	cargo run | tee sim.log
 
 debug:
 	env RUST_BACKTRACE=1 cargo run
@@ -10,4 +10,4 @@ clippy:
 
 
 waves:
-	gtkwave waves.vcd
+	gtkwave --dump waves.vcd --save plot.gtkw
