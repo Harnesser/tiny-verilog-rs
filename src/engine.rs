@@ -294,31 +294,38 @@ impl Engine {
     // the active queue
     fn update_variable(&mut self, var: &str, value: Value) {
 
-        println!("*INFO* Registering change of var \"{}\"", var);
+        // transitions
+        let mut transitions: Vec<Edge> = vec![];
 
-        // first, determine what kind of edge it is
-        let mut transition = Edge::Any(var.to_string());
+        // the 'something changed' trigger
+        transitions.push( Edge::Any(var.to_string()) );
+
+        // is there an edge trigger in here too?
         if let Some(old_value) = self.symtable.get(var) {
-            println!("*INFO* here");
             if (*old_value == 0) & (value != 0) {
-                transition = Edge::Rise(var.to_string());
+                // 0 -> something is a rising edge, triggers posedge blocks
+                transitions.push( Edge::Rise(var.to_string()) );
             } else if (*old_value != 0) & (value == 0) {
-                transition = Edge::Fall(var.to_string());
+                // something -> 0 is a falling edge and triggers negedge blocks
+                transitions.push( Edge::Fall(var.to_string()) );
             }
         }
 
+        println!("*INFO* Transition: {}", var);
 
         // update the variable
         self.symtable.insert(var.to_string(), value);
 
         // now trigger procedures sensitive to this var
         let mut pids_removed: Vec<ProcId> = vec![];
-        if let Some(pid_set) = self.waiting.remove(&transition) {
-            // activate the procedure that was waiting on a change
-            for pid in pid_set {
-                println!("*INFO* pulling from {}", pid);
-                self.get_events_from_pid(pid);
-                pids_removed.push(pid);
+        for transition in transitions {
+            if let Some(pid_set) = self.waiting.remove(&transition) {
+                // activate the procedure that was waiting on a change
+                for pid in pid_set {
+                    println!("*INFO* pulling from {}", pid);
+                    self.get_events_from_pid(pid);
+                    pids_removed.push(pid);
+                }
             }
         }
         //self.scrub_waiting_list(pids_removed);
