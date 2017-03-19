@@ -212,3 +212,45 @@ pub fn build_proc6() -> Procedure {
 
 }
 
+
+// build up a clock
+#[allow(dead_code)]
+pub fn build_clock(half_period: usize, cycles: usize) -> Procedure {
+    let mut p = Procedure {
+            kind: ProcedureType::Initial,
+            counter: 0,
+            stmts: vec![],
+    };
+
+    p.push( Statement::BlockingAssign{
+        id: Operand::Identifier("clk".to_string()),
+        expr: Expression::Const(
+            Operand::Literal(0),
+            )
+        });
+
+    for _ in 0..cycles {
+        p.push( Statement::Delay{dly: half_period} );
+
+        // rise
+        p.push( Statement::BlockingAssign{
+            id: Operand::Identifier("clk".to_string()),
+            expr: Expression::Const(
+                Operand::Literal(1),
+                )
+            });
+
+        p.push( Statement::Delay{dly: half_period} );
+
+        // fall
+        p.push( Statement::BlockingAssign{
+            id: Operand::Identifier("clk".to_string()),
+            expr: Expression::Const(
+                Operand::Literal(0),
+                )
+            });
+    }
+
+    p
+}
+
