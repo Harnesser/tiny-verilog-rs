@@ -1,0 +1,33 @@
+[*]
+[*] GTKWave Analyzer v3.3.58 (w)1999-2014 BSI
+[*] Sun Mar 19 20:57:45 2017
+[*]
+[dumpfile] "/home/harnesser/Projects/tiny-verilog-rs/waves.vcd"
+[dumpfile_mtime] "Sun Mar 19 20:57:00 2017"
+[dumpfile_size] 1605
+[savefile] "/home/harnesser/Projects/tiny-verilog-rs/plot.gtkw"
+[timestart] 0
+[size] 1169 708
+[pos] 26 -154
+*-3.163960 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 196
+[signals_width] 142
+[sst_expanded] 1
+[sst_vpaned_height] 187
+@22
+logic.a1[31:0]
+logic.a2[31:0]
+logic.a3[31:0]
+logic.a[31:0]
+logic.at_b3_c3[31:0]
+logic.b1[31:0]
+logic.b2[31:0]
+logic.b3[31:0]
+logic.b[31:0]
+logic.c1[31:0]
+logic.c2[31:0]
+logic.c3[31:0]
+logic.c[31:0]
+logic.clk[31:0]
+[pattern_trace] 1
+[pattern_trace] 0
