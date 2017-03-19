@@ -60,7 +60,7 @@ $scope module logic $end
         }
     }
 
-    pub fn declare_vars(&mut self, vars: &Vec<String>) {
+    pub fn declare_vars(&mut self, vars: &[String]) {
         let mut vcd_id = '#';
         let mut i = 0;
         for var in vars {
@@ -91,13 +91,13 @@ $end\n";
     }
 
 
-    pub fn dump(&mut self, time: Time, vars: &Vec<String>, data: &HashMap<String, Value> ){
+    pub fn dump(&mut self, time: Time, vars: &[String], data: &HashMap<String, Value> ){
         if let Some(ref mut file) = self.file {
             let timestamp = format!("\n#{}\n", time);
             let _ = file.write_all(timestamp.as_bytes());
 
             for var in vars {
-                let vcd_id = self.lut.get(var).unwrap();
+                let vcd_id = &self.lut[var];
                 if let Some(value) = data.get(var) {
                     let line = format!("b{:b} {}\n", value, vcd_id); 
                     let _ = file.write_all(line.as_bytes());

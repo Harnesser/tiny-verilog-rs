@@ -74,14 +74,7 @@ impl Expression {
                     vars.push(var);
                 }
             },
-            Expression::And(ref a, ref b) => {
-                if let Some(var) = a.get_identifier() {
-                    vars.push(var);
-                }
-                if let Some(var) = b.get_identifier() {
-                    vars.push(var);
-                }
-            },
+            Expression::And(ref a, ref b) | 
             Expression::Or(ref a, ref b) => {
                 if let Some(var) = a.get_identifier() {
                     vars.push(var);
@@ -140,12 +133,7 @@ impl Statement {
     pub fn get_identifiers(&self) -> Vec<String> {
         let mut vars: Vec<String> = vec![];
         match *self {
-            Statement::BlockingAssign{ref id, ref expr} => {
-                if let Some(var) = id.get_identifier() {
-                    vars.push(var.clone());
-                }
-                vars.append( &mut expr.get_identifiers() );
-            },
+            Statement::BlockingAssign{ref id, ref expr} |
             Statement::NonBlockingAssign{ref id, ref expr} => {
                 if let Some(var) = id.get_identifier() {
                     vars.push(var.clone());
@@ -207,7 +195,7 @@ impl Procedure {
     pub fn get_identifiers(&self) -> Vec<String> {
         let mut vars: Vec<String> = vec![];
         for stmt in &self.stmts {
-            let mut stmt_vars = stmt.get_identifiers();
+            let stmt_vars = stmt.get_identifiers();
             for var in stmt_vars {
                 if !vars.contains(&var) {
                     vars.push(var);
