@@ -3,34 +3,9 @@ use procedure::*;
 use timeheap::*;
 use vcd::*;
 
-use std::fmt;
 use std::collections::VecDeque;
 use std::collections::HashMap;
 use std::collections::HashSet;
-
-#[derive(Hash, PartialEq, Eq)]
-enum Edge {
-    Rise(String),  // zero to non-zero
-    Fall(String),  // non-zero to zero
-    Any(String),   // anything else, eg 1 to 2
-}
-
-impl fmt::Display for Edge {
-    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Edge::Any(ref var) => {
-                write!(f, "{}", var)
-            },
-            Edge::Rise(ref var) => {
-                write!(f, "posedge {}", var)
-            },
-            Edge::Fall(ref var) => {
-                write!(f, "negedge {}", var)
-            },
-        }
-    }
-}
-
 
 
 //use procedure::Value;
@@ -267,14 +242,11 @@ impl Engine {
                     break;
                 },
 
-                Statement::AtChange{ids} => {
-                    for op in ids {
-                        if let Operand::Identifier(var) = op {
-                            println!("*INFO* Process {} waits on {}", pid, var);
-                            let edge = Edge::Any(var);
-                            let e = self.waiting.entry(edge).or_insert_with( HashSet::new );
-                            e.insert(pid);
-                        }
+                Statement::AtChange{edges} => {
+                    for edge in edges {
+                        println!("*INFO* Process {} waits on {}", pid, edge);
+                        let e = self.waiting.entry(edge).or_insert_with( HashSet::new );
+                        e.insert(pid);
                     }
                     break;
                 },

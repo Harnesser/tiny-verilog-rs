@@ -20,14 +20,11 @@ fn main() {
 
     // build something to simulate
     println!("*INFO* Building design");
-    eng.add_proc( build_clock(1, 10) );
-    eng.add_proc( build_proc1() );
-    eng.add_proc( build_proc2() );
-    eng.add_proc( build_proc3() );
-    eng.add_proc( build_proc4() );
-    eng.add_proc( build_proc5() );
-    eng.add_proc( build_proc6() );
-    eng.add_proc( build_flop("at_b3_c3", "ff1_out"));
+    eng.add_proc( build_clock(1, 100) );
+    eng.add_proc( build_bitstream("a", 0xF0F0F0F0, 32, 5) );
+    eng.add_proc( build_bitstream("b", 0x34AE4210, 32, 5) );
+    eng.add_proc( build_and("y", "a", "b") );
+    eng.add_proc( build_flop("y", "ff1_out"));
 
     eng.show_proc();
     eng.init();

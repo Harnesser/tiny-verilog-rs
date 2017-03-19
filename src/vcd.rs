@@ -68,7 +68,7 @@ $scope module logic $end
             self.lut.insert(var.clone(), vcd_id.to_string());
 
             // create the definition line
-            let line = format!("$var wire 32 {} {} $end\n", vcd_id, var);
+            let line = format!("$var wire 1 {} {} $end\n", vcd_id, var);
             if let Some(ref mut file) = self.file {
                 let _ = file.write_all(line.as_bytes());
             }

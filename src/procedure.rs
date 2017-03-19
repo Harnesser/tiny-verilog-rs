@@ -93,13 +93,39 @@ impl Expression {
     }
 }
 
+
+
+#[derive(Hash, PartialEq, Eq, Debug, Clone)]
+pub enum Edge {
+    Rise(String),  // zero to non-zero
+    Fall(String),  // non-zero to zero
+    Any(String),   // anything else, eg 1 to 2
+}
+
+impl fmt::Display for Edge {
+    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Edge::Any(ref var) => {
+                write!(f, "{}", var)
+            },
+            Edge::Rise(ref var) => {
+                write!(f, "posedge {}", var)
+            },
+            Edge::Fall(ref var) => {
+                write!(f, "negedge {}", var)
+            },
+        }
+    }
+}
+
+
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
 pub enum Statement {
     Delay             {dly: Time},
     BlockingAssign    {id: Operand, expr: Expression},
     NonBlockingAssign {id: Operand, expr: Expression},
-    AtChange          {ids: Vec<Operand>},
+    AtChange          {edges: Vec<Edge>},
 }
 
 impl fmt::Display for Statement {
@@ -114,13 +140,12 @@ impl fmt::Display for Statement {
             Statement::NonBlockingAssign{ref id, ref expr} => {
                 write!(f, "{} <= {}", id, expr)
             },
-            Statement::AtChange{ref ids} => {
+            Statement::AtChange{ref edges} => {
                 let mut ids_str: Vec<String> = vec![];
 
-                for ident in ids {
-                    if let Operand::Identifier(ref id) = *ident {
-                        ids_str.push(id.clone());
-                    }
+                for edge in edges {
+                    let estr = format!("{}", edge);
+                    ids_str.push(estr);
                 }
                 let sensitivity_list = ids_str.join(" or ");
                 write!(f, "@({})", sensitivity_list)
