@@ -3,9 +3,35 @@ use procedure::*;
 use timeheap::*;
 use vcd::*;
 
+use std::fmt;
 use std::collections::VecDeque;
 use std::collections::HashMap;
 use std::collections::HashSet;
+
+#[derive(Hash, PartialEq, Eq)]
+enum Edge {
+    Rise(String),  // zero to non-zero
+    Fall(String),  // non-zero to zero
+    Any(String),   // anything else, eg 1 to 2
+}
+
+impl fmt::Display for Edge {
+    fn fmt(&self, f:&mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Edge::Any(ref var) => {
+                write!(f, "{}", var)
+            },
+            Edge::Rise(ref var) => {
+                write!(f, "posedge {}", var)
+            },
+            Edge::Fall(ref var) => {
+                write!(f, "negedge {}", var)
+            },
+        }
+    }
+}
+
+
 
 //use procedure::Value;
 
@@ -14,7 +40,7 @@ pub struct Engine {
     q_active: VecDeque<Statement>,
     q_nba: VecDeque<Statement>, // nonblocking assignments
     symtable: HashMap<String, Value>,
-    waiting: HashMap<String, HashSet<ProcId>>,
+    waiting: HashMap<Edge, HashSet<ProcId>>,
     timeheap: TimeHeap,
     time: Time,
     vars: Vec<String>, // list of vars in the design
@@ -128,10 +154,9 @@ impl Engine {
 
             Statement::BlockingAssign{id, expr} => {
                 match id {
-                    Operand::Identifier(i) => {
-                        let val = self.evaluate(expr);
-                        self.symtable.insert(i.clone(), val);
-                        self.register_change(&i);
+                    Operand::Identifier(var) => {
+                        let value = self.evaluate(expr);
+                        self.update_variable(&var, value);
                     },
                     Operand::Literal(_) => {
                     },
@@ -244,9 +269,10 @@ impl Engine {
 
                 Statement::AtChange{ids} => {
                     for op in ids {
-                        if let Operand::Identifier(id) = op {
-                            println!("*INFO* Process {} waits on {}", pid, id);
-                            let e = self.waiting.entry(id).or_insert_with( HashSet::new );
+                        if let Operand::Identifier(var) = op {
+                            println!("*INFO* Process {} waits on {}", pid, var);
+                            let edge = Edge::Any(var);
+                            let e = self.waiting.entry(edge).or_insert_with( HashSet::new );
                             e.insert(pid);
                         }
                     }
@@ -266,10 +292,28 @@ impl Engine {
 
     // a value has changed, throw anythign sensive to this on
     // the active queue
-    fn register_change(&mut self, var: &str) {
+    fn update_variable(&mut self, var: &str, value: Value) {
+
         println!("*INFO* Registering change of var \"{}\"", var);
+
+        // first, determine what kind of edge it is
+        let mut transition = Edge::Any(var.to_string());
+        if let Some(old_value) = self.symtable.get(var) {
+            println!("*INFO* here");
+            if (*old_value == 0) & (value != 0) {
+                transition = Edge::Rise(var.to_string());
+            } else if (*old_value != 0) & (value == 0) {
+                transition = Edge::Fall(var.to_string());
+            }
+        }
+
+
+        // update the variable
+        self.symtable.insert(var.to_string(), value);
+
+        // now trigger procedures sensitive to this var
         let mut pids_removed: Vec<ProcId> = vec![];
-        if let Some(pid_set) = self.waiting.remove(var) {
+        if let Some(pid_set) = self.waiting.remove(&transition) {
             // activate the procedure that was waiting on a change
             for pid in pid_set {
                 println!("*INFO* pulling from {}", pid);
