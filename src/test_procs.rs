@@ -68,7 +68,7 @@ pub fn build_flop(ff_in: &str, ff_out: &str) -> Procedure {
         ],
         });
 
-    p.push( Statement::BlockingAssign{
+    p.push( Statement::NonBlockingAssign{
         id: Operand::Identifier(ff_out.to_string()),
         expr: Expression::Const(
             Operand::Identifier(ff_in.to_string()),
@@ -149,7 +149,7 @@ pub fn build_and(y: &str, a: &str, b: &str) -> Procedure {
         });
 
 
-    p.push( Statement::NonBlockingAssign{
+    p.push( Statement::BlockingAssign{
         id: Operand::Identifier(y.to_string()),
         expr: Expression::And(
             Operand::Identifier(a.to_string()),
@@ -178,7 +178,7 @@ pub fn build_inverter(y: &str, a: &str) -> Procedure {
         });
 
 
-    p.push( Statement::NonBlockingAssign{
+    p.push( Statement::BlockingAssign{
         id: Operand::Identifier(y.to_string()),
         expr: Expression::Not(
             Operand::Identifier(a.to_string()),
