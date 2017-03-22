@@ -209,23 +209,30 @@ impl Engine {
         println!("*INFO* Time is now {}", self.time);
     }
 
-    // pump each procedure until we hit a delay statement or the end
+    // Pump the time heap until we find something to execute, or
+    // we run out of future events.
+    // We may turn up empty-handed from a procedure if the procedure
+    // ends on a delay statement.
     fn get_events(&mut self) -> usize {
         let mut c_stmt:usize = 0;
 
-        // get a list of the procedures activating in the next time step
-        let (nexttime, proc_ids) = self.timeheap.activate();
-        if let Some(time) = nexttime {
-            self.update_time(time);
-            println!("*INFO* Activating: {:?}", proc_ids);
-        } else {
-            println!("*INFO* Time starved");
-            return 0;
-        }
-
-        // grab events from the active procedures and queue them up
-        for pid in proc_ids {
-            c_stmt += self.get_events_from_pid(pid);
+        loop {
+            let (nexttime, proc_ids) = self.timeheap.activate();
+            if let Some(time) = nexttime {
+                self.update_time(time);
+                println!("*INFO* Activating: {:?}", proc_ids);
+                // grab events from the active procedures and queue them up
+                for pid in proc_ids {
+                    c_stmt += self.get_events_from_pid(pid);
+                }
+                // we found something to execute, so stop pumping the timeheap
+                if c_stmt > 0 {
+                    break;
+                }
+            } else {
+                println!("*INFO* Time starved");
+                break;
+            }
         }
         c_stmt
     }
@@ -234,6 +241,7 @@ impl Engine {
     fn get_events_from_pid(&mut self, pid: ProcId) -> usize {
         let mut c_stmt:usize = 0;
         let p = &mut self.procedures[pid];
+        println!("  P: {} -- {} of {}", pid, p.counter, p.stmts.len() ); 
         while let Some(stmt) = p.next_stmt() {
             match stmt {
 
@@ -261,9 +269,11 @@ impl Engine {
                 }
             }
         }
-    c_stmt
+        if c_stmt == 0 {
+            println!("*INFO* Procedure {} event starved", pid);
+        }
+        c_stmt
     }
-
 
     // a value has changed, throw anythign sensive to this on
     // the active queue

@@ -107,7 +107,12 @@ pub fn build_flop_with_resetb(ff_in: &str, ff_out: &str) -> Procedure {
 
 // build up a bitstream
 #[allow(dead_code)]
-pub fn build_bitstream(wire: &str, data:usize, len:usize, period: usize) -> Procedure {
+pub fn build_bitstream(wire: &str,
+                       data:usize,
+                       len:usize,
+                       period:usize,
+                       offset:usize
+                      ) -> Procedure {
 
     let mut p = Procedure {
             kind: ProcedureType::Initial,
@@ -117,6 +122,10 @@ pub fn build_bitstream(wire: &str, data:usize, len:usize, period: usize) -> Proc
 
     assert!(len <= 32);
     assert!(period <= 50);
+
+    if offset > 0 {
+        p.push( Statement::Delay{dly: offset} );
+    }
 
     for i in 0..len {
         let data = ( data >> i ) & 1;

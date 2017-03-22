@@ -34,7 +34,7 @@ endif
 set shortmess=aoO
 badd +35 src/main.rs
 badd +260 src/engine.rs
-badd +0 src/procedure.rs
+badd +1 src/procedure.rs
 badd +242 src/test_procs.rs
 args src/main.rs src/engine.rs src/procedure.rs
 edit src/main.rs
@@ -50,9 +50,9 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe '1resize ' . ((&lines * 18 + 25) / 50)
-exe '2resize ' . ((&lines * 17 + 25) / 50)
-exe '3resize ' . ((&lines * 11 + 25) / 50)
+exe '1resize ' . ((&lines * 19 + 26) / 53)
+exe '2resize ' . ((&lines * 18 + 26) / 53)
+exe '3resize ' . ((&lines * 12 + 26) / 53)
 argglobal
 nnoremap <buffer> <D-R> :RustRun! =join(b:rust_last_rustc_args)erust#AppendCmdLine(' -- ' . join(b:rust_last_args))
 nnoremap <buffer> <silent> <D-r> :RustRun
@@ -168,7 +168,7 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 35 - ((16 * winheight(0) + 9) / 18)
+let s:l = 35 - ((17 * winheight(0) + 9) / 19)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -291,12 +291,12 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 390 - ((8 * winheight(0) + 8) / 17)
+let s:l = 17 - ((0 * winheight(0) + 9) / 18)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-390
-normal! 033|
+17
+normal! 05|
 wincmd w
 argglobal
 edit src/procedure.rs
@@ -414,16 +414,17 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 3 - ((2 * winheight(0) + 5) / 11)
+let s:l = 3 - ((2 * winheight(0) + 6) / 12)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 3
 normal! 07|
 wincmd w
-exe '1resize ' . ((&lines * 18 + 25) / 50)
-exe '2resize ' . ((&lines * 17 + 25) / 50)
-exe '3resize ' . ((&lines * 11 + 25) / 50)
+2wincmd w
+exe '1resize ' . ((&lines * 19 + 26) / 53)
+exe '2resize ' . ((&lines * 18 + 26) / 53)
+exe '3resize ' . ((&lines * 12 + 26) / 53)
 tabnext 1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf
