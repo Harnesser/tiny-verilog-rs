@@ -79,9 +79,10 @@ impl Engine {
     pub fn run(&mut self) {
         // simulation loop
         println!("\n*INFO* Starting simulation");
-        let mut c_loop = 0;
+        let mut c_loop = 1;
         loop {
-            println!("\n*INFO* Loop {}", c_loop);
+            println!("======================================================");
+            println!("*INFO* Time: {}ns + {}", self.time, c_loop);
             //self.show_symtable();
             //self.show_queues();
             self.show_blocked_pids();
@@ -105,6 +106,7 @@ impl Engine {
                 }
 
                 println!("*INFO* Get events from procedures");
+                c_loop = 0;
                 let c_stmt = self.get_events();
 
                 if c_stmt == 0 {
@@ -114,6 +116,7 @@ impl Engine {
             }
             c_loop += 1;
         }
+        println!("======================================================");
         println!("\n*INFO* Finished at time {}", self.time);
         if let Some(ref mut vcd) = self.dumper {
             vcd.dump(self.time, &self.vars, &self.symtable);
